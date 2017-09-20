@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    						http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    						http://www.springframework.org/schema/context
+   							http://www.springframework.org/schema/context/spring-context-2.5.xsd
+   							http://www.springframework.org/schema/tx
+          					http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     						http://www.springframework.org/schema/aop
+     						http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+   							http://www.springframework.org/schema/mvc
+						    http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd" >
+
+
+
+  <!--注解扫描-->
+  <context:component-scan base-package="com.lance.springdemo" annotation-config="true"/>
+
+  <!-- 默认的注解映射的支持 -->
+  <context:annotation-config/>
+
+  <!--json 编码配置-->
+  <mvc:annotation-driven>
+    <mvc:message-converters>
+      <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+        <property name="supportedMediaTypes">
+          <list>
+            <value>application/json;charset=UTF-8</value>
+          </list>
+        </property>
+      </bean>
+    </mvc:message-converters>
+  </mvc:annotation-driven>
+
+  <!--&lt;!&ndash; 文件上传 &ndash;&gt;-->
+  <!--<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">-->
+    <!--<property name="maxUploadSize" value="10485760"/> &lt;!&ndash; 10m &ndash;&gt;-->
+    <!--<property name="maxInMemorySize" value="4096" />-->
+    <!--<property name="defaultEncoding" value="UTF-8"></property>-->
+  <!--</bean>-->
+
+
+  <!--<import resource="c3p0-datasource.xml"/>-->
+
+  <import resource="druid-datasource.xml"/>
+
+  <!--<import resource="dbcp-datasource.xml"/>-->
+
+  <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="mapperLocations" value="classpath*:mappers/*Mapper.xml"></property>
+    <!-- 分页插件 -->
+    <!--<property name="plugins">-->
+      <!--<array>-->
+        <!--<bean class="com.github.pagehelper.PageHelper">-->
+          <!--<property name="properties">-->
+            <!--<value>-->
+              <!--dialect=mysql-->
+            <!--</value>-->
+          <!--</property>-->
+        <!--</bean>-->
+      <!--</array>-->
+    <!--</property>-->
+  </bean>
+
+  <!-- 三、创建mybatis会话template -->
+  <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+    <constructor-arg index="0" ref="sqlSessionFactory"></constructor-arg>
+  </bean>
+
+  <!-- 注册接口类的bean，使得程序中可以用注解方式获取 -->
+  <bean name="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.lance.springdemo.dao"/>
+  </bean>
+
+  <!-- 使用@Transactional进行声明式事务管理需要声明下面这行 -->
+  <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+  <!-- 事务管理 -->
+  <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="rollbackOnCommitFailure" value="true"/>
+  </bean>
+
+</beans>
